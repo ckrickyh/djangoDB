@@ -52,9 +52,12 @@ DJANGO_APPS = [
 ]
 
 # add this line
-APPLLICAITON_APPS = ['pages.apps.PagesConfig'] 
+APPLICATION_APPS = ['pages.apps.PagesConfig',
+                    'treeinvs.apps.TreeInvsConfig'] #add this
 
-INSTALLED_APPS = DJANGO_APPS + APPLLICAITON_APPS
+THIRD_PARTY_APPS = ["debug_toolbar"]
+
+INSTALLED_APPS = DJANGO_APPS + APPLICATION_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -71,7 +74,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # 'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

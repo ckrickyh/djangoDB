@@ -20,8 +20,11 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
+from debug_toolbar.toolbar import debug_toolbar_urls
+
 urlpatterns = [
     path('', include('pages.urls', namespace='pages')),
+    path('etl', include('treeinvs.urls', namespace='etls')), #add this, without '/' at the end 
     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

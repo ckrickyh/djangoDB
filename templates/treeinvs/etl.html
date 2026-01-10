@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Import/Export</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Import/Export Tool</h1>
+    
+    <label for="fileInput">Select CSV File to Import:</label>
+    <input type="file" id="fileInput" accept=".csv">
+    <button id="importBtn">Import CSV</button>
+    
+    <hr>
+    
+    <button id="exportBtn">Export CSV</button>
+    
+    <script>
+        // Import CSV functionality
+        document.getElementById('importBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const contents = e.target.result;
+                    // Process the CSV data here
+                    console.log(contents);
+                    alert("CSV imported successfully!");
+                };
+                
+                reader.readAsText(file);
+            } else {
+                alert("Please select a CSV file to import.");
+            }
+        });
+
+        // Export CSV functionality
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            // Sample data for export; modify this based on your actual data
+            const data = [
+                ["OBJECTID", "EASTING", "NORTHING"],
+                [28, 843288.701, 820245.623],
+                [29, 843286.664, 820250.532]
+            ];
+
+            const csvContent = data.map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "exported_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+</html>
