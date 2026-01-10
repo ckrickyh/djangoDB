@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class TreeinvConfig(AppConfig):
+class TreeinvsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'treeinv'
+    name = 'treeinvs'
