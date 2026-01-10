@@ -9,6 +9,16 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+# Only add these if you get a GDAL/GEOS not found error
+import subprocess
+
+try:
+    # This automatically finds the Homebrew paths for your Mac
+    GDAL_LIBRARY_PATH = subprocess.check_output(['brew', '--prefix', 'gdal']).decode('utf-8').strip() + '/lib/libgdal.dylib'
+    GEOS_LIBRARY_PATH = subprocess.check_output(['brew', '--prefix', 'geos']).decode('utf-8').strip() + '/lib/libgeos_c.dylib'
+except:
+    pass
+
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -67,6 +77,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',  # Add this line here
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -95,13 +106,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         #'NAME': BASE_DIR / 'db.sqlite3',
         'NAME': 'erb8dbmanager',
         'USER': 'postgres',
         'PASSWORD':'admin1234',
         'HOST':'localhost',
-
+        'PORT':'5432'
     }
 }
 

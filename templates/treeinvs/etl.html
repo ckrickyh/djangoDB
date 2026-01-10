@@ -5,57 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Import/Export</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 15px;
-            font-size: 16px;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; }
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .alert-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+        button, .btn { padding: 10px 15px; font-size: 16px; cursor: pointer; border-radius: 4px; border: none; }
+        .btn-export { background-color: #007bff; color: white; margin-top: 10px; }
     </style>
 </head>
-<body>
-    <h1>CSV Import/Export Tool</h1>
-    
-    <label for="fileInput">Select CSV File to Import:</label>
-    <input type="file" id="fileInput" accept=".csv">
-    <button id="importBtn">Import CSV</button>
-    
-    <hr>
-    
-    <button id="exportBtn">Export CSV</button>
-    
+<body class="container">
+    <h1>Tree Inventory: CSV ETL Tool</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <section style="background: #f4f4f4; padding: 20px; border-radius: 8px;">
+        <h3>Import Data to PostgreSQL</h3>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label for="fileInput">Select CSV File to Import:</label><br><br>
+                <input type="file" name="csv_file" id="fileInput" accept=".csv" required>
+            </div>
+            <button type="submit" style="background-color: #28a745; color: white;">
+                Upload & Process to Database
+            </button>
+        </form>
+    </section>
+
+    <hr style="margin: 40px 0;">
+
+    <section>
+        <h3>Export Data from Browser</h3>
+        <p>Click below to download a sample CSV (Client-side generation):</p>
+        <button id="exportBtn" class="btn btn-export">Download Export CSV</button>
+    </section>
+
     <script>
-        // Import CSV functionality
-        document.getElementById('importBtn').addEventListener('click', function() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const contents = e.target.result;
-                    // Process the CSV data here
-                    console.log(contents);
-                    alert("CSV imported successfully!");
-                };
-                
-                reader.readAsText(file);
-            } else {
-                alert("Please select a CSV file to import.");
-            }
-        });
-
-        // Export CSV functionality
+        // Export CSV functionality (remains as your original JS)
         document.getElementById('exportBtn').addEventListener('click', function() {
-            // Sample data for export; modify this based on your actual data
             const data = [
-                ["OBJECTID", "EASTING", "NORTHING"],
-                [28, 843288.701, 820245.623],
-                [29, 843286.664, 820250.532]
+                ["TREE_ID", "SPECIES_NAME", "EASTING", "NORTHING"],
+                ["T001", "Litsea Glutinosa", 843288.701, 820245.623],
+                ["T002", "Macaranga Tanarius", 843286.664, 820250.532]
             ];
 
             const csvContent = data.map(e => e.join(",")).join("\n");
@@ -63,7 +61,7 @@
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
-            link.setAttribute("download", "exported_data.csv");
+            link.setAttribute("download", "tree_inventory_export.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
