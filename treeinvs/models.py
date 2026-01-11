@@ -2,6 +2,7 @@
 
 # Create your models here.
 from django.contrib.gis.db import models
+from django.utils import timezone
 
 class TreeInventory(models.Model):
     # Identifiers
@@ -10,7 +11,7 @@ class TreeInventory(models.Model):
 
     # general info
     species_name = models.CharField(max_length=255, null=True, blank=True)
-    dovt_id = models.CharField(max_length=100, null=True, blank=True)
+    ovt_id = models.CharField(max_length=100, null=True, blank=True)
     
     # Dendrometric variable
     dbh = models.FloatField(null=True, blank=True) # Diameter at Breast Height
@@ -20,10 +21,11 @@ class TreeInventory(models.Model):
     # Location Info
     road_name = models.CharField(max_length=255, null=True, blank=True)
     veg_id = models.CharField(max_length=100, null=True, blank=True)
-    lu_hm = models.CharField(max_length=50, null=True, blank=True)
+    lu_hmd = models.CharField(max_length=50, null=True, blank=True)
     
     #import date
-    import_date = models.DateTimeField(auto_now_add=True)
+    # import_date = models.DateTimeField(auto_now_add=True)
+    import_date = models.DateTimeField(default=timezone.now)
 
     # The actual PostGIS Geometry field
     # SRID 2326 = HK 1980 Grid System
