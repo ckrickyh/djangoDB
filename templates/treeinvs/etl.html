@@ -27,7 +27,7 @@
 
     <section style="background: #f4f4f4; padding: 20px; border-radius: 8px;">
         <h3>Import Data to PostgreSQL</h3>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'treeinvs:importCsv' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div style="margin-bottom: 20px;">
                 <label for="fileInput">Select CSV File to Import:</label><br><br>
@@ -42,30 +42,11 @@
     <hr style="margin: 40px 0;">
 
     <section>
-        <h3>Export Data from Browser</h3>
-        <p>Click below to download a sample CSV (Client-side generation):</p>
-        <button id="exportBtn" class="btn btn-export">Download Export CSV</button>
+        <h3>Export Data from Database</h3>
+        <p>Download the live inventory currently stored in PostgreSQL:</p>
+        <a href="{% url 'treeinvs:exportCsv' %}" class="btn btn-export">
+            Download Live CSV
+        </a>
     </section>
-
-    <script>
-        // Export CSV functionality (remains as your original JS)
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            const data = [
-                ["TREE_ID", "SPECIES_NAME", "EASTING", "NORTHING"],
-                ["T001", "Litsea Glutinosa", 843288.701, 820245.623],
-                ["T002", "Macaranga Tanarius", 843286.664, 820250.532]
-            ];
-
-            const csvContent = data.map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "tree_inventory_export.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    </script>
 </body>
 </html>

@@ -2,7 +2,11 @@ from django.shortcuts import render
 from django.contrib import messages # add this
 from .utils import loadcsv
 
-def etl(request):
+import csv
+from django.http import HttpResponse
+from .models import TreeInventory
+
+def import_tree_csv(request):
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
         
@@ -19,3 +23,30 @@ def etl(request):
             messages.error(request, f"Error processing file: {e}")
             
     return render(request, 'treeinvs/etl.html')
+
+def export_trees_csv(request):
+    # 1. Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="tree_inventory_export.csv"'
+
+    writer = csv.writer(response)
+    
+    # 2. Write the Header Row
+    writer.writerow([
+        'OBJECTID', 'TREE_ID', 'SPECIES_NAME', 'DBH', 
+        'HEIGHT', 'SPREAD', 'ROAD_NAME', 'EASTING', 
+        'NORTHING', 'IMPORT_DATE'
+    ])
+
+    # 3. Write Data Rows
+    # Use .values_list() for better performance with large datasets
+    trees = TreeInventory.objects.all().values_list(
+        'objectid', 'tree_id', 'species_name', 'dbh', 
+        'height', 'spread', 'road_name', 'easting', 
+        'northing', 'import_date'
+    )
+
+    for tree in trees:
+        writer.writerow(tree)
+
+    return response
