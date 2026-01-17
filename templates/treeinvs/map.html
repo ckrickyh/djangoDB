@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tree Inventory Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 600px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Tree Inventory Map</h1>
+    <div id="map"></div>
+
+    <script>
+        // Initialize map centered on Hong Kong
+        var map = L.map('map').setView([22.3193, 114.1694], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fetch GeoJSON data from our Django view
+        fetch('/treeinv/data/')
+            .then(res => res.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        layer.bindPopup(
+                            `<strong>ID:</strong> ${feature.properties.tree_id}<br>` +
+                            `<strong>Species:</strong> ${feature.properties.species_name}<br>` +
+                            `<strong>DBH:</strong> ${feature.properties.dbh}cm`
+                        );
+                    }
+                }).addTo(map);
+            });
+    </script>
+</body>
+</html>

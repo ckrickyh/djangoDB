@@ -2,6 +2,10 @@ from django.shortcuts import render
 from django.contrib import messages # add this
 from .utils import loadcsv
 
+from django.core.serializers import serialize
+from django.http import HttpResponse
+from .models import TreeInventory
+
 import csv
 from django.http import HttpResponse
 from .models import TreeInventory
@@ -50,3 +54,14 @@ def export_trees_csv(request):
         writer.writerow(tree)
 
     return response
+
+
+def tree_map_view(request):
+    """Renders the main map page"""
+    return render(request, 'treeinv/map.html')
+
+def tree_data(request):
+    """Returns the tree points as GeoJSON for the map"""
+    trees = TreeInventory.objects.all()
+    geojson = serialize('geojson', trees, geometry_field='geometry', fields=('tree_id', 'species_name', 'dbh'))
+    return HttpResponse(geojson, content_type='application/json')

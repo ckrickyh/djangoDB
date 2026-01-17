@@ -26,7 +26,8 @@ urlpatterns = [
     path('', include('pages.urls', namespace='pages')),
     path('etl', include('treeinvs.urls', namespace='treeinvs')), #add this, without '/' at the end 
     path('admin/', admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) +  debug_toolbar_urls()
+
 
 admin.site.title = "Adm Portals"
 admin.site.index_title = "Admin Portal"

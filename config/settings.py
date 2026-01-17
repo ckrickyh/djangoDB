@@ -65,7 +65,7 @@ DJANGO_APPS = [
 APPLICATION_APPS = ['pages.apps.PagesConfig',
                     'treeinvs.apps.TreeInvsConfig'] #add this
 
-THIRD_PARTY_APPS = ["debug_toolbar"]
+THIRD_PARTY_APPS = ["debug_toolbar", 'leaflet', 'import_export',]
 
 INSTALLED_APPS = DJANGO_APPS + APPLICATION_APPS + THIRD_PARTY_APPS
 
@@ -100,6 +100,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (22.3193, 114.1694),
+    'DEFAULT_ZOOM': 12,
+    'TILES': [('HK Combined Map', 'https://mapapi.geodata.gov.hk/gs/api/v1.0.0/xyz/basemap/WGS84/{z}/{x}/{y}.png', {'attribution': 'hkgov', 'maxNativeZoom': 20, 'maxZoom': 30})],
+    'OVERLAYS': [
+            ('Labels', 'https://mapapi.geodata.gov.hk/gs/api/v1.0.0/xyz/label/hk/tc/WGS84/{z}/{x}/{y}.png', {'attribution': 'label', 'opacity': 0.7}),
+        ],
+    'ATTRIBUTION_PREFIX': 'hkgov',
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -150,8 +159,21 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = 'static/'
+STATIC_ROOT=os.path.join(BASE_DIR,'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,'config/static')
+]
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_URL = '/media/'
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
