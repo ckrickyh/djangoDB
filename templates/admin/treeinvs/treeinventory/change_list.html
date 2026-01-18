@@ -1,0 +1,33 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    <li>
+        <form method="POST" action="import_process/", enctype="multipart/form-data" id="bulk-import-form" style="display:flex; align-items:center; gap:8px; margin-right:10px;">
+            {% csrf_token %}
+            
+            <div style="position: relative; display: inline-block;">
+                <label for="csv_file" class="button" style="background: #999; color: white; height: 24px; line-height: 24px; padding: 0 12px; margin: 0; cursor: pointer; display: inline-block; font-weight: normal; font-size: 11px; border-radius: 4px;">
+                    <span id="file-name-display">Choose CSV</span>
+                </label>
+                <input type="file" name="csv_file" id="csv_file" required 
+                       style="position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;"
+                       onchange="document.getElementById('file-name-display').innerText = this.files[0].name.substring(0, 15) + (this.files[0].name.length > 15 ? '...' : '')">
+            </div>
+
+            <button type="submit" id="import-submit-btn" class="button" style="background: #417690; color: white; height: 24px; padding: 0 12px; border: none; font-size: 11px; font-weight: bold;">
+                Upload & Process 
+            </button>
+        </form>
+    </li>
+
+    <script>
+        document.getElementById('bulk-import-form').onsubmit = function() {
+            const btn = document.getElementById('import-submit-btn');
+            btn.innerHTML = "Processing... Please wait";
+            btn.style.background = "#ba2121"; // Changes to red to warn user not to refresh
+            btn.style.cursor = "wait";
+        };
+    </script>
+
+    {{ block.super }}
+{% endblock %}

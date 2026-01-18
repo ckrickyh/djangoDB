@@ -65,7 +65,7 @@ DJANGO_APPS = [
 APPLICATION_APPS = ['pages.apps.PagesConfig',
                     'treeinvs.apps.TreeInvsConfig'] #add this
 
-THIRD_PARTY_APPS = ["debug_toolbar", 'leaflet', 'import_export',]
+THIRD_PARTY_APPS = ["debug_toolbar", 'leaflet', 'import_export', 'admin_numeric_filter']
 
 INSTALLED_APPS = DJANGO_APPS + APPLICATION_APPS + THIRD_PARTY_APPS
 

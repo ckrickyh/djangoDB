@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages # add this
 from .utils import loadcsv
 
@@ -15,17 +15,30 @@ def import_tree_csv(request):
         csv_file = request.FILES['csv_file']
         
         try:
-            # Call the utility function
+        
             raw_size, added, skipped, num_missing = loadcsv(csv_file)
 
-            if (len(skipped) > 0):
-                messages.success(request, f"Import Complete: {added}/{raw_size} trees saved, {num_missing} items at row [{skipped}] skipped due to missing data.")
+            if len(skipped) > 0:
+                msg = f"Import Complete: {added}/{raw_size} trees saved, {num_missing} items skipped at row [{skipped}]."
             else:
-                messages.success(request, f"Import Complete: {added}/{raw_size} trees saved, no missing data.")
+                msg = f"Import Complete: {added}/{raw_size} trees saved, no missing data."
+            
+            messages.success(request, msg)
+
+            # 2. DYNAMIC REDIRECT
+            # If the request comes from the Admin URL, go back to Admin
+            if 'admin' in request.path:
+                return redirect('admin:treeinvs_treeinventory_changelist')
+            
+            # Otherwise, stay on your custom ETL page
+            return render(request, 'treeinvs/etl.html')
 
         except Exception as e:
             messages.error(request, f"Error processing file: {e}")
+            if 'admin' in request.path:
+                return redirect('admin:treeinvs_treeinventory_changelist')
             
+    # Default return for GET requests
     return render(request, 'treeinvs/etl.html')
 
 def export_trees_csv(request):
