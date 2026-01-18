@@ -7,8 +7,15 @@ from django.http import HttpResponse
 from .models import TreeInventory
 
 import csv
-from django.http import HttpResponse
-from .models import TreeInventory
+from django.http import StreamingHttpResponse
+from datetime import datetime
+
+from django.http import StreamingHttpResponse
+from django.contrib.gis.db.models.functions import Transform
+from django.db.models import Func, F
+from django.db import models
+
+from django.contrib.admin.views.main import ChangeList # Import this => For custom admin changelist view
 
 def import_tree_csv(request):
     if request.method == 'POST' and request.FILES.get('csv_file'):
@@ -41,33 +48,75 @@ def import_tree_csv(request):
     # Default return for GET requests
     return render(request, 'treeinvs/etl.html')
 
+#=== CSV EXPORT VIEW ===#
+
+# Define raw PostGIS coordinate extractors
+class RawX(Func):
+    function = 'ST_X'
+    output_field = models.FloatField()
+
+class RawY(Func):
+    function = 'ST_Y'
+    output_field = models.FloatField()
+
+class Echo:
+    """An object that implements just the write method of the file-like interface."""
+    def write(self, value):
+        return value
+
 def export_trees_csv(request):
-    # 1. Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="tree_inventory_export.csv"'
+    # 0. Clean the parameters to handle the 'list' issue
+    params = request.GET.copy()
+    for key in params:
+        # Some filters might pass a list, we take the first item
+        if isinstance(params[key], list):
+            params[key] = params[key][0]
 
-    writer = csv.writer(response)
-    
-    # 2. Write the Header Row
-    writer.writerow([
-        'OBJECTID', 'TREE_ID', 'SPECIES_NAME', 'DBH', 
-        'HEIGHT', 'SPREAD', 'ROAD_NAME', 'EASTING', 
-        'NORTHING', 'IMPORT_DATE'
-    ])
+    # 1. Get the base queryset
+    queryset = TreeInventory.objects.all()
 
-    # 3. Write Data Rows
-    # Use .values_list() for better performance with large datasets
-    trees = TreeInventory.objects.all().values_list(
-        'objectid', 'tree_id', 'species_name', 'dbh', 
-        'height', 'spread', 'road_name', 'easting', 
-        'northing', 'import_date'
-    )
+    # 2. Apply Admin Filters from the URL
+    for key, value in params.items():
+        if key not in ['page', 'o', 'ot'] and value: # Only filter if value exists
+            try:
+                queryset = queryset.filter(**{key: value})
+            except Exception:
+                # Skip invalid filters to prevent crashing the export
+                continue
 
-    for tree in trees:
-        writer.writerow(tree)
+    # 3. Annotate with transformed coordinates
+    # FIX: Call .annotate directly on the queryset
+    trees = queryset.annotate(
+        geom_2326=Transform('geometry', 2326),
+        geom_4326=Transform('geometry', 4326),
+    ).annotate(
+        hk_e=RawX(F('geom_2326')),
+        hk_n=RawY(F('geom_2326')),
+        wgs_lat=RawY(F('geom_4326')),
+        wgs_lon=RawX(F('geom_4326'))
+    ).values_list(
+        'tree_id', 'species_name', 'dbh', 'height', 
+        'hk_e', 'hk_n', 'wgs_lat', 'wgs_lon'
+    ).order_by('tree_id').iterator(chunk_size=5000)
 
+    # 4. Generator
+    def csv_generator():
+        echo = Echo()
+        writer = csv.writer(echo)
+        
+        yield writer.writerow([
+            'Tree ID', 'Species', 'DBH (mm)', 'Height (m)', 
+            'HK80_Easting', 'HK80_Northing', 'WGS84_Latitude', 'WGS84_Longitude'
+        ])
+        
+        for tree in trees:
+            yield writer.writerow(tree)
+
+    # 5. Response
+    response = StreamingHttpResponse(csv_generator(), content_type='text/csv')
+    filename = f"treeInventoryExport_{datetime.now().strftime('%Y-%m-%d_%H%M%S')}.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
-
 
 def tree_map_view(request):
     """Renders the main map page"""

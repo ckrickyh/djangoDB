@@ -19,6 +19,12 @@
             </button>
         </form>
     </li>
+    
+    <a href="{% url 'treeinvs:exportCsv' %}?{{ request.GET.urlencode }}" 
+        class="button" 
+        style="background: #417690; color: white; padding: 8px 12px; border-radius: 4px; text-decoration: none; font-size: 11px;">
+            Export Filtered (CSV)
+    </a>
 
     <script>
         document.getElementById('bulk-import-form').onsubmit = function() {
