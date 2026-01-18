@@ -7,7 +7,7 @@ from django.utils import timezone
 class TreeInventory(models.Model):
     # Identifiers
     objectid = models.IntegerField(unique=True)
-    tree_id = models.CharField(max_length=50, null=True, blank=True)
+    tree_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
 
     # general info
     species_name = models.CharField(max_length=255, null=True, blank=True)
@@ -37,3 +37,17 @@ class TreeInventory(models.Model):
 
     def __str__(self):
         return f"{self.tree_id} - {self.species_name}"
+
+class TreePhotoUrl(models.Model):
+
+    tree_tag = models.ForeignKey(TreeInventory, 
+        to_field='tree_id', # This tells Django to link to tree_id
+        on_delete=models.PROTECT, 
+        db_constraint=False, # This stops the database from checking the ID
+        related_name='photos', # allows reverse access from TreeInventory to TreePhoto
+        null=False
+    )
+    url = models.URLField(max_length=1000, null=True, blank=True)
+
+    def __str__(self):
+        return f"Photo for {self.tree_tag_id}"

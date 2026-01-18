@@ -24,7 +24,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('', include('pages.urls', namespace='pages')),
-    path('etl', include('treeinvs.urls', namespace='treeinvs')), #add this, without '/' at the end 
+    path('etl/', include('treeinvs.urls', namespace='treeinvs')), #add this, without '/' at the end 
     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) +  debug_toolbar_urls()
 

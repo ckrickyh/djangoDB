@@ -14,6 +14,9 @@ def loadcsv(csv_path, sep=",", **kwargs):
     """
     dfTreeInv = pd.read_csv(csv_path, sep=sep)
     rawRows = dfTreeInv.shape[0]
+    duplicatedRows = dfTreeInv['TREE_ID'].duplicated().sum()
+    dfTreeInv.drop_duplicates(subset=['TREE_ID'], keep='first', inplace=True)
+    
 
     dfTreeInv[dfTreeInv.select_dtypes(['object']).columns] = dfTreeInv.select_dtypes(['object']).apply(lambda x: x.str.strip())
     dfTreeInv = dfTreeInv.drop(columns=['GeometryEasting', 'GeometryNorthing'])   # drop geo east, north
@@ -59,4 +62,4 @@ def loadcsv(csv_path, sep=",", **kwargs):
         index=False,
     )
 
-    return rawRows, importedRows, missingRows, num_missing
+    return rawRows, importedRows, missingRows, num_missing, duplicatedRows

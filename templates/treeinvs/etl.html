@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Import/Export</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; }
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .alert-error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+        button, .btn { padding: 10px 15px; font-size: 16px; cursor: pointer; border-radius: 4px; border: none; }
+        .btn-export { background-color: #007bff; color: white; margin-top: 10px; }
+    </style>
+</head>
+<body class="container">
+    <h1>Tree Inventory: CSV ETL Tool</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <section style="background: #f4f4f4; padding: 20px; border-radius: 8px;">
+        <h3>Import Data to PostgreSQL</h3>
+        <form method="POST" action="{% url 'treeinvs:importCsv' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label for="fileInput">Select CSV File to Import:</label><br><br>
+                <input type="file" name="csv_file" id="fileInput" accept=".csv" required>
+            </div>
+            <button type="submit" style="background-color: #28a745; color: white;">
+                Upload & Process to Database
+            </button>
+        </form>
+    </section>
+
+    <hr style="margin: 40px 0;">
+
+    <section>
+        <h3>Export Data from Database</h3>
+        <p>Download the live inventory currently stored in PostgreSQL:</p>
+        <a href="{% url 'treeinvs:exportCsv' %}" class="btn btn-export">
+            Download Live CSV
+        </a>
+    </section>
+
+    <section style="background: #e9ecef; padding: 20px; margin-top: 20px; border-radius: 8px;">
+        <h3>Step 2: Import Photo URLs</h3>
+        <form method="POST" action="{% url 'treeinvs:importPhotos' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="csv_file" accept=".csv" required>
+            <button type="submit" style="background-color: #17a2b8; color: white;">
+                Upload Photo CSV
+            </button>
+        </form>
+    </section>
+
+</body>
+</html>

@@ -4,7 +4,7 @@ from .utils import loadcsv
 
 from django.core.serializers import serialize
 from django.http import HttpResponse
-from .models import TreeInventory
+from .models import TreeInventory, TreePhotoUrl
 
 import csv
 from django.http import StreamingHttpResponse
@@ -17,18 +17,21 @@ from django.db import models
 
 from django.contrib.admin.views.main import ChangeList # Import this => For custom admin changelist view
 
+from django.db import connection
+import io
+
 def import_tree_csv(request):
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
         
         try:
         
-            raw_size, added, skipped, num_missing = loadcsv(csv_file)
+            raw_size, added, skipped, num_missing, duplicatedRows = loadcsv(csv_file)
 
             if len(skipped) > 0:
-                msg = f"Import Complete: {added}/{raw_size} trees saved, {num_missing} items skipped at row [{skipped}]."
+                msg = f"Import Complete: {added}/{raw_size} trees saved, {num_missing} items skipped at row [{skipped}]. Duplicated Rows: {duplicatedRows}."
             else:
-                msg = f"Import Complete: {added}/{raw_size} trees saved, no missing data."
+                msg = f"Import Complete: {added}/{raw_size} trees saved, no missing data. Duplicated Rows: {duplicatedRows}."
             
             messages.success(request, msg)
 
@@ -118,6 +121,45 @@ def export_trees_csv(request):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+
+# === import tree photo ===
+def import_tree_photos(request):
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "No file uploaded")
+            return redirect('treeinvs:importCsv')
+
+        try:
+            # 1. Access the raw cursor from Django's connection
+            with connection.cursor() as cursor:
+                # 2. Get the underlying psycopg2 cursor
+                # In Django, cursor.cursor is the actual psycopg2 object
+                raw_cursor = cursor.cursor
+                
+                # 3. Handle the file upload
+                # We wrap the uploaded file in a TextIOWrapper to ensure it's readable by copy_expert
+                content = csv_file.read().decode('utf-8')
+                csv_data = io.StringIO(content)
+                
+                # 4. Execute the High-Speed COPY
+                # Note: 'tree_tag_id' is the column name Django creates for your ForeignKey
+                sql = """
+                    COPY treeinvs_treephotourl (tree_tag_id, url) 
+                    FROM STDIN WITH CSV HEADER DELIMITER ','
+                """
+                raw_cursor.copy_expert(sql, csv_data)
+                
+            messages.success(request, "Fast bulk import completed successfully!")
+            
+        except Exception as e:
+            messages.error(request, f"Database Error: {e}")
+            
+        return redirect('treeinvs:importCsv')
+
+    return redirect('treeinvs:importCsv')
+
+# === other  ===
 def tree_map_view(request):
     """Renders the main map page"""
     return render(request, 'treeinv/map.html')

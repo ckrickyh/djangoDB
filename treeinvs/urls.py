@@ -9,5 +9,5 @@ urlpatterns = [
     # path(endPoint, views.logic, variableName in html)
     path('', views.import_tree_csv, name='importCsv'),
     path('export-csv/', views.export_trees_csv, name='exportCsv'), # Add this ，Name: Used in HTML (e.g., {% url 'treeinvs:export_trees_csv' %}).
-
+    path('import-photos/', views.import_tree_photos, name='importPhotos'),
 ]
